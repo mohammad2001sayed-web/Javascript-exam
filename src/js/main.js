@@ -71,7 +71,7 @@ class App {
           overlay.classList.add("opacity-0", "pointer-events-none");
           setTimeout(() => {
             overlay.remove();
-          }, 500);
+          }, 400);
         }, 1000); 
       });
     }
