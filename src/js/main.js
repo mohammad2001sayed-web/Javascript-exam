@@ -12,16 +12,21 @@
 import { APIService } from "./api.js";
 import { AppNavigator } from "./navigator.js";
 import { HomeController } from "./home.js";
+import { CategoriesController } from "./categories.js";
 
 class App {
   constructor() {
     this.apiService = new APIService();
     this.homeController = new HomeController(this.apiService);
 
+    // ✨ التعديل هنا: تشغيل الكلاس بتاع الـ Categories وتمرير الاعتمادات له
+    this.categoriesController = new CategoriesController(this.apiService, this.homeController);
+    this.categoriesController.init();
+
     this.initRouter();
     this.initLoadingOverlay();
 
-    // تشغيل الـ Home وتجيب الوجبات
+    // تشغيل الـ Home وتجيب الوجبات الابتدائية
     this.homeController.init();
   }
 
@@ -61,18 +66,13 @@ class App {
     const overlay = document.getElementById("app-loading-overlay");
 
     if (overlay) {
-      // أول ما الصفحة والملفات تجهز
       window.addEventListener("load", () => {
-        // نثبت الـ Loading لمدة ثانية واحدة عشان اليوزر يشوف الـ Animation الروعة ده
         setTimeout(() => {
-          // إضافة كلاسات الإخفاء التدريجي ومنع الضغط
           overlay.classList.add("opacity-0", "pointer-events-none");
-
-          // حذف العنصر تماماً بعد نصف ثانية (بعد ما الـ opacity تخلص)
           setTimeout(() => {
             overlay.remove();
           }, 500);
-        }, 1000); // مدة الظهور (1 ثانية)
+        }, 1000); 
       });
     }
   }
