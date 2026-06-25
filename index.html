@@ -27,6 +27,31 @@
   </head>
   <body class="bg-gray-50 font-sans">
     <!-- Loading Overlay -->
+
+<div
+  id="app-loading-overlay"
+  class="fixed inset-0 bg-white z-[100] flex items-center justify-center transition-opacity duration-500 ease-out"
+>
+  <div class="text-center">
+    <div class="relative w-20 h-20 mx-auto mb-6">
+      <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 animate-pulse"></div>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <i class="fa-solid fa-leaf text-white text-3xl animate-bounce"></i>
+      </div>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-900 mb-2">NutriPlan</h2>
+    <p class="text-gray-500 mb-4">Loading your wellness journey...</p>
+    <div class="flex items-center justify-center gap-1">
+      <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+      <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+      <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+    </div>
+  </div>
+</div>
+
+
+
+    
     <div
       id="app-loading-overlay"
       class="loading fixed inset-0 bg-white z-[100] flex items-center justify-center transition-opacity duration-500"
@@ -103,7 +128,7 @@
             <li>
               <a
                 class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
-                href="#/scanner"
+                href="#/products"
               >
                 <i class="fa-solid fa-barcode w-5"></i>
                 <span class="font-medium">Product Scanner</span>
@@ -112,7 +137,7 @@
             <li>
               <a
                 class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
-                href="#/food-log"
+                href="#/foodlog"
               >
                 <i class="fa-solid fa-clipboard-list w-5"></i>
                 <span class="font-medium">Food Log</span>
@@ -315,7 +340,7 @@
         </div>
       </section>
 
-      <section id="meal-details" class="px-8 py-8 bg-gray-50">
+      <section id="meal-details" class="px-8 py-8 bg-gray-50 hidden">
         <div class="max-w-7xl mx-auto">
           <!-- Back Button -->
           <button
@@ -759,7 +784,7 @@
       </section>
 
       <!-- ============= PRODUCT SCANNER SECTION ============= -->
-      <section id="products-section" class="px-8 py-8 bg-gray-50 min-h-screen">
+      <section id="products-section" class="px-8 py-8 bg-gray-50 min-h-screen hidden">
         <div class="max-w-7xl mx-auto">
           <!-- Search Header -->
           <div
@@ -995,7 +1020,7 @@
       </section>
 
       <!-- ============= FOOD LOG SECTION ============= -->
-      <section id="foodlog-section" class="px-8 py-8 bg-gray-50 min-h-screen">
+      <section id="foodlog-section" class="px-8 py-8 bg-gray-50 min-h-screen hidden">
         <div class="max-w-7xl mx-auto">
           <!-- Page Header -->
           <div
@@ -1188,6 +1213,7 @@
         </div>
       </section>
     </div>
+    
 
     <!-- Main JavaScript Entry Point -->
     <script type="module" src="./src/js/main.js"></script>
