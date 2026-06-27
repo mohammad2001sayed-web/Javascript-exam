@@ -5,6 +5,10 @@ export class HomeController {
     this.apiService = apiService;
     this.recipesGrid = document.getElementById("recipes-grid");
     this.recipesCount = document.getElementById("recipes-count");
+    
+    // 🎯 تمسيك أزرار الـ View Toggle من الـ HTML الحقيقي بتاعك
+    this.gridViewBtn = document.getElementById("grid-view-btn");
+    this.listViewBtn = document.getElementById("list-view-btn");
   }
 
   async init() {
@@ -13,11 +17,55 @@ export class HomeController {
       this.showLoading();
       const meals = await this.apiService.getInitialMeals();
       this.renderMeals(meals, `Showing ${meals.length} recipes`, "All");
+      
+      // ✨ تشغيل ميزة التبديل بين الـ Grid والـ List
+      this.initViewToggle();
     }
   }
 
   /**
-   * دالة رسم الكروت المكتملة بالملي بناءً على الصورة بتاعتك
+   * دالة التحكم في شكل العرض وتبديل الكلاسات والألوان للأزرار
+   */
+  initViewToggle() {
+    if (!this.gridViewBtn || !this.listViewBtn || !this.recipesGrid) return;
+
+    // 1️⃣ عند الضغط على زرار الـ List View (يعرض كاردين كبار في السطر)
+    this.listViewBtn.addEventListener("click", () => {
+      // تغيير كلاسات الـ Grid عشان يفرش الكروت
+      this.recipesGrid.classList.remove("sm:grid-cols-2", "md:grid-cols-3", "lg:grid-cols-4");
+      this.recipesGrid.classList.add("grid-cols-1", "md:grid-cols-2", "max-w-5xl", "mx-auto");
+
+      // إضاءة زرار الـ List (خلفية بيضاء وضل خفيف)
+      this.listViewBtn.classList.add("bg-white", "rounded-md", "shadow-sm");
+      this.listViewBtn.querySelector("i").classList.remove("text-gray-500");
+      this.listViewBtn.querySelector("i").classList.add("text-gray-700");
+
+      // إطفاء زرار الـ Grid (إزالة الخلفية والضل)
+      this.gridViewBtn.classList.remove("bg-white", "rounded-md", "shadow-sm");
+      this.gridViewBtn.querySelector("i").classList.remove("text-gray-700");
+      this.gridViewBtn.querySelector("i").classList.add("text-gray-500");
+    });
+
+    // 2️⃣ عند الضغط على زرار الـ Grid View (يرجعهم 4 كروت في السطر)
+    this.gridViewBtn.addEventListener("click", () => {
+      // إرجاع كلاسات الـ 4 كروت الأصلية للتيلويند
+      this.recipesGrid.classList.remove("grid-cols-1", "md:grid-cols-2", "max-w-5xl", "mx-auto");
+      this.recipesGrid.classList.add("grid-cols-1", "sm:grid-cols-2", "md:grid-cols-3", "lg:grid-cols-4");
+
+      // إضاءة زرار الـ Grid (خلفية بيضاء وضل خفيف)
+      this.gridViewBtn.classList.add("bg-white", "rounded-md", "shadow-sm");
+      this.gridViewBtn.querySelector("i").classList.remove("text-gray-500");
+      this.gridViewBtn.querySelector("i").classList.add("text-gray-700");
+
+      // إطفاء زرار الـ List
+      this.listViewBtn.classList.remove("bg-white", "rounded-md", "shadow-sm");
+      this.listViewBtn.querySelector("i").classList.remove("text-gray-700");
+      this.listViewBtn.querySelector("i").classList.add("text-gray-500");
+    });
+  }
+
+  /**
+   * دالة رسم الكروت المكتملة بناءً على الداتا القادمة من الـ API
    */
   renderMeals(meals, countTextString, currentCategory) {
     if (this.recipesCount) this.recipesCount.textContent = countTextString;
@@ -34,24 +82,19 @@ export class HomeController {
       return;
     }
 
-    // بناء الكروت بجميع تفاصيل الصورة
+    // بناء الكروت بجميع التفاصيل والـ Badges
     this.recipesGrid.innerHTML = meals
       .map((meal) => {
-        // الـ API بتاع الفلترة (بالبلد أو الكاتيجوري) مش بيرجع كل البيانات (زي الوصف أو البلد)،
-        // فبنعمل تعويض ذكي عشان الكارد يفضل غني ومكتمل دايماً زي الصورة بالظبط.
         const category = meal.strCategory || currentCategory || "Chicken";
         const area = meal.strArea || "Spanish";
-
-        // تنظيف وتقصير براجراف الوصف عشان ميبقاش طويل ويبوظ التصميم
+        
         let description = "";
         if (meal.strInstructions) {
           description = meal.strInstructions;
         } else {
-          // نص افتراضي شيك شبه اللي في صورتك بالظبط لو الـ API مش جاعث وصف
           description = `step 1 Heat oven to 190C/170C fan/gas 5. Put all the ingredients into a delicious mix...`;
         }
 
-        // تقصير النص لـ 90 حرف عشان يظهر تلات نقط (...) في الآخر بشكل جمالي
         if (description.length > 90) {
           description = description.substring(0, 90) + "...";
         }
@@ -61,7 +104,6 @@ export class HomeController {
             class="recipe-card bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer group"
             data-meal-id="${meal.idMeal}"
           >
-            <!-- 1️⃣ الصورة والـ Badges اللي ع الصورة من تحت -->
             <div class="relative h-52 overflow-hidden bg-gray-100">
               <img
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -70,7 +112,6 @@ export class HomeController {
                 loading="lazy"
               />
               
-              <!-- الـ Badges العايمة فوق الصورة بالملي -->
               <div class="absolute bottom-3 left-3 flex items-center gap-2">
                 <span class="flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-semibold rounded-lg shadow-sm">
                   <i class="fa-solid fa-tag text-emerald-600 text-[10px]"></i>
@@ -83,27 +124,21 @@ export class HomeController {
               </div>
             </div>
 
-            <!-- 2️⃣ بيانات الكارد (العنوان، البراجراف، والسطر السفلي) -->
             <div class="p-4">
-              <!-- عنوان الأكلة الرئيسي -->
               <h3 class="text-base font-bold text-gray-900 mb-1 group-hover:text-emerald-600 transition-colors line-clamp-1">
                 ${meal.strMeal}
               </h3>
 
-              <!-- البراجراف المكتمل المكتوب تحت العنوان بالظبط -->
               <p class="text-xs text-gray-500 font-normal mb-4 line-clamp-2 leading-relaxed h-8">
                 ${description}
               </p>
 
-              <!-- خط فاصل خفيف -->
               <div class="border-t border-gray-100 pt-3 flex items-center justify-between text-xs text-gray-500 font-medium">
-                <!-- أيقونة الـ Category التانية تحت -->
                 <div class="flex items-center gap-1.5">
                   <i class="fa-solid fa-utensils text-emerald-600"></i>
                   <span>${category}</span>
                 </div>
                 
-                <!-- أيقونة الـ Cuisine التانية تحت -->
                 <div class="flex items-center gap-1.5">
                   <i class="fa-solid fa-globe text-blue-500"></i>
                   <span>${area}</span>
@@ -118,13 +153,21 @@ export class HomeController {
     this.addCardEvents();
   }
 
+  /**
+   * دالة التنقل لصفحة التفاصيل عند الضغط على الكارد (محدثة لحل مشكلة الـ Click)
+   */
   addCardEvents() {
     const cards = document.querySelectorAll(".recipe-card");
     cards.forEach((card) => {
-      card.addEventListener("click", () => {
-        const mealId = card.dataset.mealId;
+      card.addEventListener("click", (e) => {
+        // ✨ .closest بتضمن إن الـ Click يقرا الكارد الكبير أياً كانت الحتة اللي دوست عليها
+        const currentCard = e.target.closest(".recipe-card");
+        if (!currentCard) return;
+
+        const mealId = currentCard.dataset.mealId;
         console.log("Opening Meal Details for ID:", mealId);
-        // هنا هتحط كود التنقل لصفحة تفاصيل الوجبة بعدين
+        
+        // تحويل الـ Hash لصفحة التفاصيل وتمرير الـ ID
         window.location.hash = `#/meal-details?id=${mealId}`;
       });
     });

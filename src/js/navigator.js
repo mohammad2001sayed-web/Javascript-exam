@@ -1,90 +1,76 @@
 // src/js/navigator.js
+
 export class AppNavigator {
   constructor(routes) {
     this.routes = routes;
-
-    // 1. اسمع لتغير الـ Hash في الـ URL (لما تدوس على اللينكات)
+    this.allSections = this.extractAllSections();
+    
+    // الاستماع لأي تغيير في الـ Hash (لما اللينك يتغير فوق)
     window.addEventListener("hashchange", () => this.handleRoute());
+    
+    // تشغيل الـ Route أول ما الموقع يفتح لأول مرة
+    this.handleRoute();
+  }
 
-    // 2. اسمع لأول ما الصفحة تعمل Load
-    window.addEventListener("load", () => this.handleRoute());
+  extractAllSections() {
+    const sections = new Set();
+    for (const route in this.routes) {
+      this.routes[route].sectionsShow.forEach((section) => sections.add(section));
+    }
+    return Array.from(sections);
   }
 
   handleRoute() {
-    // جيب الـ Hash الحالي (مثلاً #/home أو #/products)
-    let currentHash = window.location.hash;
+    let hash = window.location.hash || "#/home";
 
-    // لو الصفحة لسه فاتحة والـ Hash فاضي، خليه يروح لـ #/home تلقائياً
-    if (!currentHash || currentHash === "#/" || currentHash === "") {
+    // لو اللينك فيه علامة استفهام (بتاعت الـ ID) بنشيلها عشان الـ Routing يطابق صح
+    if (hash.includes("?")) {
+      hash = hash.split("?")[0]; 
+    }
+
+    const currentRoute = this.routes[hash];
+    
+    if (!currentRoute) {
       window.location.hash = "#/home";
       return;
     }
 
-    // جيب إعدادات السيكشن المقابل للـ Hash من الخريطة
-    const targetRoute = this.routes[currentHash];
+    // 1️⃣ ✨ الحتة السحرية: تحديث الـ Active Link في الناف بار دايماً
+    this.updateActiveNavbarLink(hash);
 
-    if (targetRoute) {
-      this.showSections(targetRoute);
-      this.updateNavbarActiveState(currentHash);
-    } else {
-      // لو المسار مش مكتوب صح، حوله للهوم
-      window.location.hash = "#/home";
-    }
-  }
-
-  showSections(routeConfig) {
-    // أسماء الـ IDs بتاعة الـ 6 سكاشن اللي عندك في الـ HTML بالظبط
-    const allMainSections = [
-      "search-filters-section",
-      "meal-categories-section",
-      "all-recipes-section",
-      "meal-details",
-      "products-section",
-      "foodlog-section",
-    ];
-
-    // إخفاء كل السكاشن أولاً
-    allMainSections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add("hidden");
-    });
-
-    // إظهار السكاشن الخاصة بالصفحة الحالية فقط
-    routeConfig.sectionsShow.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.classList.remove("hidden");
-    });
-
-    // تحديث نصوص الـ Header ديناميكياً
-    const headerTitle = document.querySelector("#header h1");
-    const headerSubtitle = document.querySelector("#header p");
-    if (headerTitle && headerSubtitle) {
-      headerTitle.textContent = routeConfig.title;
-      headerSubtitle.textContent = routeConfig.subtitle;
-    }
-  }
-
-  updateNavbarActiveState(activeHash) {
-    const navLinks = document.querySelectorAll(".nav-link");
-    navLinks.forEach((link) => {
-      const href = link.getAttribute("href");
-
-      if (href === activeHash) {
-        // تلوين اللينك النشط باللون الأخضر المميز بتاعك
-        link.className =
-          "nav-link flex items-center gap-3 px-3 py-2.5 bg-emerald-50 text-emerald-700 rounded-lg transition-all";
-        const span = link.querySelector("span");
-        if (span) {
-          span.className = "font-semibold";
+    // 2️⃣ إخفاء وإظهار السيكشنز بناءً على الصفحة الحالية
+    this.allSections.forEach((sectionId) => {
+      const sectionElement = document.getElementById(sectionId);
+      
+      if (sectionElement) {
+        if (currentRoute.sectionsShow.includes(sectionId)) {
+          sectionElement.classList.remove("hidden");
+        } else {
+          sectionElement.classList.add("hidden");
         }
+      }
+    });
+  }
+
+  /**
+   * دالة ذكية بتلف على كل لينكات الـ Navbar وتنور اللينك الحالي
+   */
+  updateActiveNavbarLink(currentHash) {
+    // هنجيب كل عناصر الـ <a> اللي جوه الناف بار بتاعك اللي واخدين href بيبدأ بـ #
+    const navLinks = document.querySelectorAll("nav a, .sidebar a"); // حطينا nav و sidebar عشان يلقطهم في أي مكان
+    
+    navLinks.forEach(link => {
+      const linkHash = link.getAttribute("href");
+      
+      // لو الـ hash بتاع اللينك هو نفسه الـ hash اللي اليوزر واقف عليه حالياً
+      if (linkHash === currentHash || (currentHash === "#/meal-details" && linkHash === "#/home")) {
+        // 🟢 شكل الـ Active (تعدل الكلاسات دي بناءً على تصميمك - مثلاً هنا خلفية خضرا خفيفة وكلام أخضر)
+        link.classList.add("bg-emerald-50", "text-emerald-600", "font-semibold");
+        link.classList.remove("text-gray-600", "hover:bg-gray-50");
       } else {
-        // إرجاع اللينكات الباقية للشكل الرمادي الطبيعي
-        link.className =
-          "nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-all";
-        const span = link.querySelector("span");
-        if (span) {
-          span.className = "font-medium";
-        }
+        // ⚪ شكل اللينك الطبيعي غير النشط
+        link.classList.remove("bg-emerald-50", "text-emerald-600", "font-semibold");
+        link.classList.add("text-gray-600", "hover:bg-gray-50");
       }
     });
   }

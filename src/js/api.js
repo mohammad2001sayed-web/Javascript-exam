@@ -2,7 +2,7 @@
 
 export class APIService {
     constructor() {
-        // اللينك الأساسي لـ API الوجبات الشهير
+        // اللينك الأساسي لـ API الوجبات
         this.mealBaseUrl = 'https://www.themealdb.com/api/json/v1/1';
     }
 
@@ -13,7 +13,6 @@ export class APIService {
         try {
             const response = await fetch(`${this.mealBaseUrl}/search.php?s=`);
             const data = await response.json();
-            // الـ API بيرجع بـ الوجبات في مصفوفة اسمها meals، هناخد أول 25 منها بس
             return data.meals ? data.meals.slice(0, 25) : [];
         } catch (error) {
             console.error("حدث خطأ أثناء جلب الوجبات الابتدائية:", error);
@@ -22,7 +21,7 @@ export class APIService {
     }
 
     /**
-     * 2️⃣ جلب جميع الأقسام (Categories) المتاحة في الـ API
+     * 2️⃣ جلب جميع الأقسام (Categories) المتاحة
      */
     async getCategories() {
         try {
@@ -36,7 +35,7 @@ export class APIService {
     }
 
     /**
-     * 3️⃣ جلب الأكلات التابعة لقسم معين (مثل: Beef, Pasta, Chicken)
+     * 3️⃣ جلب الأكلات التابعة لقسم معين (مثل: Beef, Pasta)
      */
     async getMealsByCategory(categoryName) {
         try {
@@ -76,4 +75,18 @@ export class APIService {
             return [];
         }
     }
-}
+
+    /**
+     * 6️⃣ جلب تفاصيل وجبة معينة بالكامل باستخدام الـ ID
+     */
+    async getMealDetailsById(id) {
+        try {
+            const response = await fetch(`${this.mealBaseUrl}/lookup.php?i=${id}`);
+            const data = await response.json();
+            return data.meals ? data.meals[0] : null;
+        } catch (error) {
+            console.error(`حدث خطأ أثناء جلب تفاصيل الوجبة ذات المعرف ${id}:`, error);
+            return null;
+        }
+    }
+}               
